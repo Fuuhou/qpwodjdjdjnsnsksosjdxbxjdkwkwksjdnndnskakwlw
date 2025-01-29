@@ -5,7 +5,7 @@ function install-bot() {
 
     # Update dan upgrade sistem
     apt update -y && apt upgrade -y
-    apt install python3 python3-pip git speedtest-cli p7zip-full -y
+    apt install python3 python3-pip git p7zip-full -y
 
     # Hentikan proses bot jika sedang berjalan
     systemctl stop xiebot 2>/dev/null
@@ -14,6 +14,11 @@ function install-bot() {
     # Download file ZIP bot
     echo "📥 Mengunduh file bot..."
     wget -q --show-progress https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
+
+    if [ ! -f "xiebot.zip" ]; then
+        echo "❌ Gagal mengunduh file bot. Pastikan URL benar dan coba lagi."
+        exit 1
+    fi
 
     # Maksimum percobaan password
     max_attempts=3
@@ -24,6 +29,11 @@ function install-bot() {
         read -s password
 
         # Coba ekstrak file ZIP dengan 7z
+        if ! command -v 7z &> /dev/null; then
+            echo "❌ 7z tidak ditemukan. Pastikan 7z terinstal dan coba lagi."
+            exit 1
+        fi
+
         if 7z x -p"$password" xiebot.zip -o/tmp/xiebot/ -y &>/dev/null; then
             echo "✅ Password benar! Mengekstrak file..."
             break
@@ -41,6 +51,10 @@ function install-bot() {
     done
 
     # Pindahkan isi folder xiebot ke /usr/bin/
+    if [ ! -d "/tmp/xiebot" ]; then
+        echo "❌ Direktori /tmp/xiebot tidak ditemukan!"
+        exit 1
+    fi
     mv /tmp/xiebot/* /usr/bin/
 
     # Buat direktori downloads jika belum ada
@@ -48,8 +62,13 @@ function install-bot() {
 
     # Berikan izin eksekusi pada file bot
     chmod +x /usr/bin/xiebot/*
+
     # Install dependensi bot
-    pip3 install -r /usr/bin/xiebot/requirements.txt
+    if [ ! -f "/usr/bin/xiebot/requirements.txt" ]; then
+        echo "❌ File requirements.txt tidak ditemukan!"
+        exit 1
+    fi
+    pip3 install -r /usr/bin/xiebot/requirements.txt || { echo "❌ Gagal menginstal dependensi"; exit 1; }
 
     # Hapus file ZIP dan folder sementara
     rm -rf xiebot.zip /tmp/xiebot
@@ -71,7 +90,10 @@ WantedBy=multi-user.target
 EOF
 
     # Reload systemd, enable, dan start service xiebot
-    systemctl daemon-reload
+    if ! systemctl daemon-reload; then
+        echo "❌ Gagal reload systemd"
+        exit 1
+    fi
     systemctl enable xiebot
     systemctl start xiebot
 
