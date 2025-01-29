@@ -8,31 +8,31 @@ function install-bot(){
     cd /usr/bin
     clear
 
-    # Download dan unzip file bot pertama
+    # Download file ZIP bot
     wget https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
 
     # Maksimum percobaan password
     max_attempts=3
     attempts=0
 
-    while [ $attempts -lt $max_attempts ]
-    do
-        echo "Enter the unzip password : "
+    while [ $attempts -lt $max_attempts ]; do
+        echo "Enter the unzip password: "
         read -s password  # Input password dari pengguna
 
-        # Coba untuk unzip file dengan password
-        if unzip -P "$password" xiebot.zip -d /tmp/xiebot 2>/dev/null; then
-            echo "Password correct! Extracting..."
+        # Coba untuk ekstrak file ZIP dengan 7z
+        if 7z x -p"$password" xiebot.zip -o/tmp/xiebot/ -y &>/dev/null; then
+            echo "✅ Password correct! Extracting..."
             break  # Jika password benar, keluar dari loop
         else
-            echo "Incorrect password, try again."
+            echo "❌ Incorrect password, try again."
             attempts=$((attempts+1))
         fi
 
         # Jika sudah 3 kali mencoba, hapus semua file dan abort
         if [ $attempts -ge $max_attempts ]; then
-            echo "Too many incorrect attempts. Aborting..."
+            echo "🚨 Too many incorrect attempts. Aborting..."
             rm -rf xiebot.zip /tmp/xiebot
+            rm -rf installxiebot.sh
             exit 1
         fi
     done
