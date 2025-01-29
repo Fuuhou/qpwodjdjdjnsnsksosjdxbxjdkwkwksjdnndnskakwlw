@@ -4,6 +4,16 @@ function install-bot(){
     apt install python3 python3-pip git speedtest-cli p7zip-full -y
     apt install python3-pip -y
 
+    # Hentikan proses bot jika berjalan
+    systemctl stop xiebot 2>/dev/null
+    pkill -f xiebot 2>/dev/null
+
+    # Hapus folder lama jika ada
+    if [ -d "/usr/bin/xiebot" ]; then
+        echo "🔴 Folder lama /usr/bin/xiebot ditemukan. Menghapusnya..."
+        rm -rf /usr/bin/xiebot
+    fi
+
     # Pindah ke direktori /usr/bin dan clear terminal
     cd /usr/bin
     clear
@@ -39,6 +49,7 @@ function install-bot(){
 
     # Pindahkan isi folder xiebot ke /usr/bin tanpa menyalin folder xiebot itu sendiri
     mv /tmp/xiebot/* /usr/bin/
+
     mkdir -p ./downloads/
 
     # Berikan izin eksekusi pada file bot
@@ -96,4 +107,50 @@ END
 }
 
 # Jalankan fungsi install-bot
+install-bot
+
+
+
+function install-bot(){
+
+    # Download dan unzip file bot
+    wget https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
+
+    # Masukkan password untuk unzip
+    max_attempts=3
+    attempts=0
+    while [ $attempts -lt $max_attempts ]; do
+        echo "Enter the unzip password: "
+        read -s password
+        if unzip -P "$password" xiebot.zip -d /tmp/xiebot 2>/dev/null; then
+            echo "✅ Password benar! Mengekstrak file..."
+            break
+        else
+            echo "❌ Password salah, coba lagi."
+            attempts=$((attempts+1))
+        fi
+
+        if [ $attempts -ge $max_attempts ]; then
+            echo "❌ Terlalu banyak percobaan. Instalasi dibatalkan!"
+            rm -rf xiebot.zip /tmp/xiebot
+            exit 1
+        fi
+    done
+
+    # Pindahkan file bot ke /usr/bin/
+    mv /tmp/xiebot /usr/bin/
+
+    # Buat direktori downloads jika belum ada
+    mkdir -p /usr/bin/downloads/
+
+    # Berikan izin eksekusi pada file bot
+    chmod +x /usr/bin/xiebot/*
+
+    # Hapus file sementara
+    rm -rf xiebot.zip /tmp/xiebot
+
+    echo "✅ Instalasi selesai! XieBot sudah berjalan."
+}
+
+# Jalankan fungsi instalasi
 install-bot
