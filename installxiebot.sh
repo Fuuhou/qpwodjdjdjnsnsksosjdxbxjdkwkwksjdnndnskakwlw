@@ -6,14 +6,17 @@ function install-bot() {
     # Update dan upgrade sistem
     apt update -y && apt upgrade -y
     apt install python3 python3-pip git p7zip-full -y
+    sleep 2
 
     # Hentikan proses bot jika sedang berjalan
     systemctl stop xiebot 2>/dev/null
     pkill -f xiebot 2>/dev/null
+    sleep 2
 
     # Download file ZIP bot
     echo "Mengunduh file bot..."
     wget -q --show-progress https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
+    sleep 2
 
     if [ ! -f "xiebot.zip" ]; then
         echo "Gagal mengunduh file bot. Pastikan URL benar dan coba lagi."
@@ -56,13 +59,16 @@ function install-bot() {
         echo "Direktori /tmp/xiebot tidak ditemukan!"
         exit 1
     fi
+    sleep 2
     mv /tmp/xiebot/* /usr/bin/
 
     # Buat direktori downloads jika belum ada
     mkdir -p /usr/bin/downloads/
+    sleep 2
 
     # Berikan izin eksekusi pada file bot
     chmod +x /usr/bin/xiebot/*
+    sleep 2
 
     # Install dependensi bot
     if [ ! -f "/usr/bin/xiebot/requirements.txt" ]; then
@@ -77,6 +83,7 @@ function install-bot() {
     fi
 
     # Hapus file ZIP dan folder sementara
+    sleep 2
     rm -rf xiebot.zip /tmp/xiebot
 
     # Membuat systemd service untuk bot
@@ -96,14 +103,17 @@ WantedBy=multi-user.target
 EOF
 
     # Reload systemd, enable, dan start service xiebot
+    sleep 2
     systemctl daemon-reload
     if [ $? -ne 0 ]; then
         echo "Gagal reload systemd."
         exit 1
     fi
+    sleep 2
 
     systemctl enable xiebot
     systemctl start xiebot
+    sleep 2
 
     echo "Instalasi selesai! XieBot telah berjalan."
 }
