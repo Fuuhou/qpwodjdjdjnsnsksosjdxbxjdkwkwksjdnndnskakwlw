@@ -11,12 +11,6 @@ function install-bot() {
     systemctl stop xiebot 2>/dev/null
     pkill -f xiebot 2>/dev/null
 
-    # Hapus folder lama jika ada
-    if [ -d "/usr/bin/xiebot" ]; then
-        echo "🔴 Folder lama /usr/bin/xiebot ditemukan. Menghapusnya..."
-        rm -rf /usr/bin/xiebot
-    fi
-
     # Download file ZIP bot
     echo "📥 Mengunduh file bot..."
     wget -q --show-progress https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
