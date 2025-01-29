@@ -39,7 +39,8 @@ function install-bot(){
 
     # Pindahkan isi folder xiebot ke /usr/bin tanpa menyalin folder xiebot itu sendiri
     mv /tmp/xiebot/* /usr/bin/
-    
+    mkdir -p ./downloads/
+
     # Berikan izin eksekusi pada file bot
     chmod +x /usr/bin/*
 
