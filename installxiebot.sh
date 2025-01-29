@@ -52,11 +52,10 @@ function install-bot() {
     # Buat direktori downloads jika belum ada
     mkdir -p /usr/bin/downloads/
 
-    # Install dependensi bot
-    pip3 install -r /usr/bin/xiebot/requirements.txt
-
     # Berikan izin eksekusi pada file bot
     chmod +x /usr/bin/xiebot/*
+    # Install dependensi bot
+    pip3 install -r /usr/bin/xiebot/requirements.txt
 
     # Hapus file ZIP dan folder sementara
     rm -rf xiebot.zip /tmp/xiebot
