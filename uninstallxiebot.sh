@@ -1,4 +1,5 @@
 function uninstall-bot(){
+    clear
     echo "🔴 Menghentikan bot dan membersihkan sistem..."
 
     # Hentikan dan nonaktifkan service xiebot
@@ -25,6 +26,7 @@ function uninstall-bot(){
 
     # Pastikan semua operasi file selesai sebelum keluar
     sync
+    rm -f uninstallxiebot.sh
 
     echo "🛑 Bot telah berhasil dihapus dan sistem telah dibersihkan."
 }

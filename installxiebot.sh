@@ -8,20 +8,10 @@ function install-bot() {
     apt install python3 python3-pip git p7zip-full -y
     sleep 2
 
-    # Hentikan proses bot jika sedang berjalan
-    systemctl stop xiebot 2>/dev/null
-    pkill -f xiebot 2>/dev/null
-    sleep 2
-
     # Download file ZIP bot
     echo "Mengunduh file bot..."
     wget -q --show-progress https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
     sleep 2
-
-    if [ ! -f "xiebot.zip" ]; then
-        echo "Gagal mengunduh file bot. Pastikan URL benar dan coba lagi."
-        exit 1
-    fi
 
     # Maksimum percobaan password
     max_attempts=3
@@ -30,12 +20,6 @@ function install-bot() {
     while [ $attempts -lt $max_attempts ]; do
         echo "Masukkan password untuk unzip: "
         read -s password
-
-        # Cek apakah 7z terinstal
-        if ! command -v 7z &> /dev/null; then
-            echo "7z tidak ditemukan. Pastikan 7z terinstal dan coba lagi."
-            exit 1
-        fi
 
         # Ekstrak file ZIP dengan 7z
         if 7z x -p"$password" xiebot.zip -o/tmp/xiebot/ -y &>/dev/null; then
@@ -54,36 +38,19 @@ function install-bot() {
         fi
     done
 
-    # Pindahkan isi folder xiebot ke /usr/bin/
-    if [ ! -d "/tmp/xiebot" ]; then
-        echo "Direktori /tmp/xiebot tidak ditemukan!"
-        exit 1
-    fi
-    sleep 2
-    mv /tmp/xiebot/* /usr/bin/
+    mv /tmp/xiebot/* /root/
 
     # Buat direktori downloads jika belum ada
-    mkdir -p /usr/bin/downloads/
+    mkdir -p /root/downloads/
     sleep 2
 
-    # Berikan izin eksekusi pada file bot
-    chmod +x /usr/bin/xiebot/*
-    sleep 2
-
-    # Install dependensi bot
-    if [ ! -f "/usr/bin/xiebot/requirements.txt" ]; then
-        echo "File requirements.txt tidak ditemukan!"
-        exit 1
-    fi
-
-    pip3 install -r /usr/bin/xiebot/requirements.txt
+    pip3 install -r /root/xiebot/requirements.txt
     if [ $? -ne 0 ]; then
         echo "Gagal menginstal dependensi."
         exit 1
     fi
 
     # Hapus file ZIP dan folder sementara
-    sleep 2
     rm -rf xiebot.zip /tmp/xiebot
 
     # Membuat systemd service untuk bot
@@ -93,17 +60,17 @@ Description=XieBot - @superxiez
 After=syslog.target network-online.target
 
 [Service]
-WorkingDirectory=/usr/bin/xiebot
-ExecStart=/usr/bin/python3 -m xiebot
+WorkingDirectory=/root/xiebot
+ExecStart=/usr/bin/python3 -m /root/xiebot
 Restart=always
 User=root
+RestartSec=2
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
     # Reload systemd, enable, dan start service xiebot
-    sleep 2
     systemctl daemon-reload
     if [ $? -ne 0 ]; then
         echo "Gagal reload systemd."
@@ -113,7 +80,6 @@ EOF
 
     systemctl enable xiebot
     systemctl start xiebot
-    sleep 2
 
     echo "Instalasi selesai! XieBot telah berjalan."
 }
