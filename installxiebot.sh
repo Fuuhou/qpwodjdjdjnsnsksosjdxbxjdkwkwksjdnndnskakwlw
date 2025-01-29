@@ -80,7 +80,7 @@ EOF
 
     systemctl enable xiebot
     systemctl start xiebot
-
+systemctl status xiebot
     echo "Instalasi selesai! XieBot telah berjalan."
 }
 
