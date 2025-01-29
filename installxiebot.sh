@@ -1,10 +1,13 @@
-function install-bot(){
+#!/bin/bash
+
+function install-bot() {
+    echo "🔵 Memulai instalasi XieBot..."
+
     # Update dan upgrade sistem
     apt update -y && apt upgrade -y
     apt install python3 python3-pip git speedtest-cli p7zip-full -y
-    apt install python3-pip -y
 
-    # Hentikan proses bot jika berjalan
+    # Hentikan proses bot jika sedang berjalan
     systemctl stop xiebot 2>/dev/null
     pkill -f xiebot 2>/dev/null
 
@@ -14,115 +17,20 @@ function install-bot(){
         rm -rf /usr/bin/xiebot
     fi
 
-    # Pindah ke direktori /usr/bin dan clear terminal
-    cd /usr/bin
-    clear
-
     # Download file ZIP bot
-    wget https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
+    echo "📥 Mengunduh file bot..."
+    wget -q --show-progress https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
 
     # Maksimum percobaan password
     max_attempts=3
     attempts=0
 
     while [ $attempts -lt $max_attempts ]; do
-        echo "Enter the unzip password: "
-        read -s password  # Input password dari pengguna
-
-        # Coba untuk ekstrak file ZIP dengan 7z
-        if 7z x -p"$password" xiebot.zip -o/tmp/xiebot/ -y &>/dev/null; then
-            echo "✅ Password correct! Extracting..."
-            break  # Jika password benar, keluar dari loop
-        else
-            echo "❌ Incorrect password, try again."
-            attempts=$((attempts+1))
-        fi
-
-        # Jika sudah 3 kali mencoba, hapus semua file dan abort
-        if [ $attempts -ge $max_attempts ]; then
-            echo "🚨 Too many incorrect attempts. Aborting..."
-            rm -rf xiebot.zip /tmp/xiebot
-            rm -rf installxiebot.sh
-            exit 1
-        fi
-    done
-
-    # Pindahkan isi folder xiebot ke /usr/bin tanpa menyalin folder xiebot itu sendiri
-    mv /tmp/xiebot/* /usr/bin/
-
-    mkdir -p ./downloads/
-
-    # Berikan izin eksekusi pada file bot
-    chmod +x /usr/bin/*
-
-    # Hapus file ZIP dan folder sementara setelah ekstraksi
-    rm -rf xiebot.zip /tmp/xiebot
-
-    # Membuat cron job untuk pengecekan status bot
-    echo "SHELL=/bin/sh" > /etc/cron.d/cekbot
-    echo "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" >> /etc/cron.d/cekbot
-    echo "*/1 * * * * root /usr/bin/cekbot" >> /etc/cron.d/cekbot
-
-    # Membuat script pengecekan status bot
-    cat > /usr/bin/cekbot << END
-nginx=\$( systemctl status xiebot | grep Active | awk '{print \$3}' | sed 's/(//g' | sed 's/)//g' )
-if [[ \$nginx == "running" ]]; then
-    echo -ne
-else
-    systemctl restart xiebot
-    systemctl start xiebot
-fi
-
-xiebot=\$( systemctl status xiebot | grep "TERM" | wc -l )
-if [[ \$xiebot == "0" ]]; then
-    echo -ne
-else
-    systemctl restart xiebot
-    systemctl start xiebot
-fi
-END
-
-    # Membuat systemd service untuk menjalankan bot
-    cat > /etc/systemd/system/xiebot.service << END
-[Unit]
-Description=XieBot - @superxiez
-After=syslog.target network-online.target
-
-[Service]
-WorkingDirectory=/usr/bin
-ExecStart=/usr/bin/python3 -m xiebot
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-END
-
-    # Reload systemd, enable dan start service xiebot
-    systemctl daemon-reload &> /dev/null
-    systemctl enable xiebot &> /dev/null
-    systemctl start xiebot &> /dev/null
-    systemctl restart xiebot &> /dev/null
-
-    echo "🟢 Bot has been installed and is running."
-}
-
-# Jalankan fungsi install-bot
-install-bot
-
-
-
-function install-bot(){
-
-    # Download dan unzip file bot
-    wget https://raw.githubusercontent.com/Fuuhou/qpwodjdjdjnsnsksosjdxbxjdkwkwksjdnndnskakwlw/main/xiebot.zip
-
-    # Masukkan password untuk unzip
-    max_attempts=3
-    attempts=0
-    while [ $attempts -lt $max_attempts ]; do
-        echo "Enter the unzip password: "
+        echo "🔑 Masukkan password untuk unzip: "
         read -s password
-        if unzip -P "$password" xiebot.zip -d /tmp/xiebot 2>/dev/null; then
+
+        # Coba ekstrak file ZIP dengan 7z
+        if 7z x -p"$password" xiebot.zip -o/tmp/xiebot/ -y &>/dev/null; then
             echo "✅ Password benar! Mengekstrak file..."
             break
         else
@@ -130,27 +38,52 @@ function install-bot(){
             attempts=$((attempts+1))
         fi
 
+        # Jika gagal 3 kali, batalkan instalasi
         if [ $attempts -ge $max_attempts ]; then
-            echo "❌ Terlalu banyak percobaan. Instalasi dibatalkan!"
+            echo "🚨 Terlalu banyak percobaan. Instalasi dibatalkan!"
             rm -rf xiebot.zip /tmp/xiebot
             exit 1
         fi
     done
 
-    # Pindahkan file bot ke /usr/bin/
-    mv /tmp/xiebot /usr/bin/
+    # Pindahkan isi folder xiebot ke /usr/bin/
+    mv /tmp/xiebot/* /usr/bin/
 
     # Buat direktori downloads jika belum ada
     mkdir -p /usr/bin/downloads/
 
+    # Install dependensi bot
+    pip3 install -r /usr/bin/xiebot/requirements.txt
+
     # Berikan izin eksekusi pada file bot
     chmod +x /usr/bin/xiebot/*
 
-    # Hapus file sementara
+    # Hapus file ZIP dan folder sementara
     rm -rf xiebot.zip /tmp/xiebot
 
-    echo "✅ Instalasi selesai! XieBot sudah berjalan."
+    # Membuat systemd service untuk bot
+    cat > /etc/systemd/system/xiebot.service << EOF
+[Unit]
+Description=XieBot - @superxiez
+After=syslog.target network-online.target
+
+[Service]
+WorkingDirectory=/usr/bin/xiebot
+ExecStart=/usr/bin/python3 -m xiebot
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Reload systemd, enable, dan start service xiebot
+    systemctl daemon-reload
+    systemctl enable xiebot
+    systemctl start xiebot
+
+    echo "🟢 Instalasi selesai! XieBot telah berjalan."
 }
 
-# Jalankan fungsi instalasi
+# Jalankan fungsi install-bot
 install-bot
